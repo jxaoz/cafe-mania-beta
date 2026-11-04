@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Café Mania · Protótipo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#39251f;color:#48271f;font:16px system-ui,sans-serif}main{max-width:960px;margin:24px auto;background:#fff2d4;border:5px solid #a96843;border-radius:24px;overflow:hidden;box-shadow:0 16px 45px #21120d}header,footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 22px}header{background:#a53229;color:#fff4cb;border-bottom:4px solid #76291f}h1{font:bold clamp(25px,5vw,42px) Georgia;margin:0;text-shadow:0 2px #63221a}#stats{font-weight:750}svg{display:block;width:100%;background:radial-gradient(ellipse,#e4f0be,#a9c887);touch-action:manipulation}footer{border-top:3px solid #dbab71;min-height:78px}button{font:inherit;font-weight:bold;border:1px solid #883c21;border-radius:9px;background:#a5432c;color:#fff8db;padding:9px 14px;cursor:pointer}button:hover{background:#c05335}button:disabled{opacity:.45;cursor:default}dialog{width:min(540px,94vw);max-height:85vh;overflow:auto;border:4px solid #a96843;border-radius:18px;background:#fff2d4;color:#48271f}dialog::backdrop{background:#2e1a13a8}.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-top:1px solid #dfbb8a}.item>div{flex:1}.item small{display:block;margin-top:4px}svg [role=button]{cursor:pointer}svg [role=button]:focus-visible{outline:none;filter:drop-shadow(0 0 5px #ffeb29)}@media(max-width:620px){main{margin:0;border-width:0;border-radius:0}header,footer{padding:12px}}
+
+body{background:#f6f1e6;font-family:Arial,sans-serif}
+main{max-width:1150px;margin:0 auto;background:#71ca55;border:0;border-radius:0;box-shadow:0 0 35px #28251c42}
+.stage{position:relative}
+#room{background:#74cb56;aspect-ratio:780/465}
+.hud{position:absolute;z-index:1;inset:0 0 auto;display:grid;grid-template-columns:1fr minmax(125px,32%) 1fr;align-items:start;gap:8px;background:none;border:0;padding:10px 12px;pointer-events:none;color:white}
+.wallet{justify-self:start;color:#fff14f;font-weight:900;font-size:clamp(14px,3vw,25px);text-shadow:0 2px #583313,2px 0 #583313,-2px 0 #583313,-1px -2px #583313}
+.wallet>span{display:inline-grid;place-items:center;color:#ffdf43;background:#f2aa14;border:3px solid #996219;width:1em;height:1em;border-radius:50%;text-shadow:none}
+.wallet small{display:block;width:max-content;margin-top:4px;border:2px solid #60370e;border-radius:4px;background:linear-gradient(#49cd49,#148d2e);color:white;padding:3px 10px;font-size:clamp(9px,1.5vw,14px);text-shadow:0 1px #196b1e}
+.experience{display:flex;align-items:center;gap:4px;padding:4px;border:3px solid #805420;border-radius:9px;background:#b88043;box-shadow:0 2px 2px #40301b63}
+.chef-hat{font-size:clamp(12px,2.2vw,25px)}
+.meter{position:relative;flex:1;height:14px;background:#714920;border-radius:4px;text-align:center}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:4px;background:repeating-linear-gradient(135deg,#fff359 0 9px,#ffcb16 9px 18px)}
+.meter span{position:relative;font-size:clamp(8px,1.5vw,14px);font-weight:bold;text-shadow:1px 1px #44290e,-1px -1px #44290e}
+.experience strong{color:#fff34d;font-size:clamp(16px,3.5vw,32px);line-height:1;text-shadow:2px 2px #503013}
+.identity{justify-self:end;text-align:right}
+.identity h1{margin:0;background:#fffbea;color:#71472a;text-shadow:none;font:bold clamp(12px,2.5vw,23px) Arial;border:4px solid #eebc29;border-radius:6px;padding:3px 12px;box-shadow:0 2px #a66c15}
+.identity h1{max-width:24ch;overflow-wrap:anywhere}.identity span{display:block;margin-top:4px;font-weight:900;text-shadow:1px 2px #513315,-1px -1px #513315;font-size:clamp(10px,1.8vw,18px)}
+.side-tools{position:absolute;right:8px;top:31%;display:grid;gap:4px}
+.side-tools button{padding:2px;width:32px;height:30px;background:linear-gradient(#ca8655,#94492d);border:2px solid #713f25;box-shadow:0 2px #5f352b}
+.side-tools button[aria-pressed=false]{filter:saturate(.45)}
+.side-tools button:disabled{opacity:.55}
+#panel:has(.recipe-grid){width:min(640px,96vw);background:#f6d37b;border:6px solid #975417;box-shadow:inset 0 0 0 3px #fff0ad,0 8px 28px #47281088}
+#panel:has(.recipe-grid) h2{text-align:center;background:#fff3c8;border:2px solid #b07631;border-radius:6px;margin:0 0 12px;padding:7px;text-shadow:0 1px white}
+#panel .recipe-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:10px}
+.recipe-grid .item{display:grid;grid-template-rows:48px 1fr auto;text-align:center;justify-items:center;align-items:center;border:2px solid #d0a064;border-radius:8px;background:#fff9e9;padding:8px}
+.recipe-grid .item img{height:42px;width:65px;object-fit:contain}
+.recipe-grid .item small{white-space:pre-line;line-height:1.45}
+.recipe-grid .item button{background:linear-gradient(#fff389,#e7ac1c);color:#50310d;border-color:#95601c;text-shadow:0 1px #fff3a7}
+.recipe-grid .item button:hover{background:#ffdb56}
+#panel.deluxe{background:#673f25;border-color:#e6b94e}
+#panel.deluxe .recipe-grid .item{background:#ffedb0}
+#book-switch{background:#825120;border-color:#e0ac51}
+#recipe-pages:not([hidden]){display:flex;justify-content:space-between;align-items:center;margin:8px 0;color:#5a360e;font-weight:bold}#recipe-pages button{background:linear-gradient(#37caed,#0089ba);border-color:#05618b}.recipe-grid .dish-icon{font-size:31px}
+.dock{background:linear-gradient(white,#e9e4dc);border-top:4px solid #ddd4c2;min-height:70px;gap:7px;justify-content:flex-start;padding:3px 12px 8px}
+.dock button{background:none;border:0;color:#6f4326;font-size:11px;padding:0 6px;text-shadow:0 1px white}
+.dock button:hover{background:#ffeba8}
+.dock img{display:block;height:40px;width:48px;object-fit:contain;margin:auto;filter:drop-shadow(0 2px 1px #63391c55)}
+#status{flex:1;min-width:130px;font-size:13px;color:#67482e}
+@media(max-width:620px){.hud{padding:5px}.experience{border-width:2px;padding:2px}.identity h1{border-width:2px;padding:2px 5px}.side-tools{right:4px}.side-tools button{width:24px;height:24px;font-size:12px}.dock{padding:4px;gap:0}.dock img{height:31px;width:38px}}
+</style>
+<main>
+<div class="stage">
+<header class="hud" aria-label="Estado do café">
+  <div class="wallet"><span aria-hidden="true">●</span> <b id="coins"></b><small>Ouro do café</small></div>
+  <div class="experience"><span class="chef-hat" aria-hidden="true">👨‍🍳</span><div class="meter"><i id="xp-fill"></i><span id="xp-text"></span></div><strong id="level"></strong></div>
+  <div class="identity"><h1 id="cafe-name">Meu Café</h1><span id="popularity"></span></div>
+</header>
+<svg id="room" viewBox="0 0 780 485" aria-label="Salão isométrico do café"><g id="scenery"></g><g id="objects"></g></svg>
+<div class="side-tools">
+<button id="zoom-in" type="button" aria-label="Aproximar" title="Aproximar">+</button>
+<button id="zoom-out" type="button" aria-label="Afastar" title="Afastar">−</button>
+<button id="zoom-reset" type="button" aria-label="Ver salão inteiro" title="Ver salão inteiro">⛶</button><button id="music" type="button" aria-pressed="false" aria-label="Música">♫</button><button id="sound" type="button" aria-pressed="true" aria-label="Efeitos sonoros">🔊</button></div>
+</div>
+<footer class="dock">
+  <button id="shop"><img src="assets/ui/ButtonRedecorate.png" alt="">Decoração</button>
+  <button id="menu"><img src="assets/food/FoodItem20.png" alt="">Cardápio</button>
+  <button id="progress"><img src="assets/ui/AchievementButton.png" alt="">Progresso</button>
+  <button id="staff">👨‍🍳 Funcionários</button>
+  <button id="rename">✎ Nome do café</button>
+  <span id="status" aria-live="polite">Clique em um fogão para abrir o cardápio.</span>
+</footer>
+</main>
+<dialog id="panel"><h2 id="title"></h2><div id="items"></div><button type="button" id="book-switch" hidden>Livro de Luxo</button><nav id="recipe-pages" aria-label="Páginas do livro" hidden><button type="button" id="previous-page" aria-label="Página anterior">◀</button><span id="page-number" aria-live="polite"></span><button type="button" id="next-page" aria-label="Próxima página">▶</button></nav><form method="dialog"><button>Fechar</button></form></dialog>
+<dialog id="rename-panel"><form id="rename-form">
+  <h2>Nome do café</h2>
+  <label for="cafe-name-input">Como seu café vai se chamar?</label>
+  <input id="cafe-name-input" maxlength="24" required>
+  <button type="submit">Salvar</button>
+  <button type="button" id="cancel-rename">Cancelar</button>
+</form></dialog>
+<script src="assets/catalog.js"></script>
+<script>
+const byId = id => document.getElementById(id);
+const recipes = [
+  { name:'Café com leite', icon:'☕', time:8, portions:8, cost:15, sale:4, xp:6, level:1 },
+  { name:'Pão de queijo', icon:'🧀', time:16, portions:12, cost:26, sale:5, xp:10, level:1 },
+  { name:'Sanduíche natural', icon:'🥪', time:30, portions:18, cost:48, sale:6, xp:18, level:1 },
+  { name:'Bolo de chocolate', icon:'🍰', time:55, portions:28, cost:85, sale:8, xp:30, level:2 },
+  { name:'Sopa de tomate e manjericão', icon:'🍅', art:'FoodItem2', time:12, portions:10, cost:21, sale:5, xp:8, level:1 },
+  { name:'Salada da horta', icon:'🥗', art:'FoodItem21', time:24, portions:15, cost:37, sale:6, xp:14, level:1 },
+  { name:'Bruschetta de tomate', icon:'🍞', art:'FoodItem20', time:40, portions:22, cost:60, sale:7, xp:23, level:2 },
+  { name:'Sopa de frango e alho-poró', icon:'🍲', art:'FoodItem6', time:65, portions:32, cost:100, sale:9, xp:36, level:3 },
+  { name:'Pizza havaiana', icon:'🍕', art:'FoodItem5', time:48, portions:25, cost:65, sale:7, xp:24, level:2 },
+  { name:'Vulcão de chocolate', icon:'🍫', art:'FoodItem23', time:72, portions:36, cost:110, sale:9, xp:38, level:3 },
+  { name:'Atum com legumes', art:'FoodItem3', time:85, portions:42, cost:160, sale:10, xp:48, level:4, deluxe:true },
+  { name:'Bife grelhado', art:'FoodItem41', time:105, portions:50, cost:240, sale:12, xp:60, level:5, deluxe:true },
+  { name:'Pizza de pepperoni', art:'FoodItem0', time:125, portions:62, cost:340, sale:13, xp:75, level:6, deluxe:true },
+  { name:'Torta de abóbora', art:'FoodItem27', time:150, portions:75, cost:470, sale:15, xp:90, level:7, deluxe:true }
+];
+const furniture = [
+  {name:'Mesa com cadeira', kind:'table', cost:70},
+  {name:'Balcão de servir', kind:'counter', cost:100},
+  {name:'Fogão', kind:'stove', cost:150},
+  {name:'Planta ornamental', kind:'plant', cost:35},
+  {name:'Fogão vermelho', kind:'stove', style:'ruby', cost:220},
+  {name:'Vaso de bambu', kind:'plant', style:'bamboo', cost:55}
+];
+const effects = Object.fromEntries(
+  ['SfxCooking', 'SfxCash', 'SfxPlaceItem', 'SfxEating', 'SfxLevelUp'].map(name => [
+    name, new Audio('assets/audio/' + name + '.mp3')
+  ])
+);
+const music = new Audio('assets/audio/MusicRestaurant.mp3');
+music.loop = true;
+music.volume = .3;
+byId('music').onclick = async () => {
+  if(music.paused){
+    try { await music.play(); }
+    catch { tell('O navegador não conseguiu iniciar a música.'); return; }
+  } else music.pause();
+  byId('music').setAttribute('aria-pressed',String(!music.paused));
+  byId('music').setAttribute('aria-label',music.paused?'Tocar música':'Pausar música');
+};
+let soundEnabled = true;
+byId('sound').onclick = () => {
+  soundEnabled = !soundEnabled;
+  byId('sound').textContent = soundEnabled ? '🔊' : '🔇';
+  byId('sound').setAttribute('aria-pressed', String(soundEnabled));
+  if (!soundEnabled) Object.values(effects).forEach(effect => effect.pause());
+};
+function playEffect(name) {
+  if (!soundEnabled) return;
+  const effect = effects[name];
+  effect.currentTime = 0;
+  effect.play().catch(() => {});
+}
+const saveKey = 'cafe-mania-prototipo-v1';
+const starter = {
+  coins:160, xp:0, popularity:60, served:0,
+  furniture:[
+    ...[1,2,3].map(y=>({kind:'stove',x:9,y})),
+    {kind:'counter',x:9,y:4,dish:4,portions:8},
+    ...[5,6].map(y=>({kind:'counter',x:9,y})),
+    ...[1,3,5,7].map(x=>({kind:'table',x,y:1})),
+    ...[3,5,7].map(y=>({kind:'table',x:1,y})),
+    ...[3,5,7].map(x=>({kind:'table',x,y:7})),
+    {kind:'plant',x:0,y:0},{kind:'plant',style:'bamboo',x:9,y:8}
+  ]
+};
+let state;
+try { state = JSON.parse(localStorage.getItem(saveKey)) ?? starter; }
+catch { state = starter; }
+let placement = null;
+let moving = null;
+let customers = [];
+let nextGuest = Date.now() + 300;
+let tableCursor = 0;
+const level = () => 1 + Math.floor(state.xp / 35);
+function save(){
+  try { localStorage.setItem(saveKey, JSON.stringify(state)); }
+  catch { tell('O navegador bloqueou o salvamento local.'); }
+}
+function tell(message){ byId('status').textContent = message; }
+const columns=10, rows=9;
+const point = (x,y,z=0) => [372+(x-y)*39,88+(x+y)*19-z];
+const polygon = (points, fill, stroke='#63392b') =>
+  '<polygon points="'+points.map(p=>p.join(',')).join(' ')+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="1.1" stroke-linejoin="round"/>';
+function block(x,y,w,d,h,colors,z=0){
+  const a=point(x,y,z), b=point(x+w,y,z), c=point(x+w,y+d,z), e=point(x,y+d,z);
+  const top=[a,b,c,e].map(([px,py])=>[px,py-h]);
+  return polygon([e,c,top[2],top[3]],colors[1])+polygon([b,c,top[2],top[1]],colors[2])+polygon(top,colors[0]);
+}
+function label(x,y,value,size=16,fill='#502d20'){
+  return '<text x="'+x+'" y="'+y+'" fill="'+fill+'" font-size="'+size+'" text-anchor="middle" font-weight="800" pointer-events="none">'+value+'</text>';
+}
+const tiles = [];
+function ground(x1,y1,x2,y2,fill,stroke='none'){
+  return polygon([point(x1,y1),point(x2,y1),point(x2,y2),point(x1,y2)],fill,stroke);
+}
+let scene=ground(-3.9,-3.9,30,0,'#b26d64')+ground(-3.9,0,0,30,'#b26d64');
+scene+=ground(-3.5,-3.5,30,-.27,'#c6c5c0')+ground(-3.5,-.27,-.27,30,'#c6c5c0');
+scene+=ground(-3.17,-3.17,30,-.63,'#768098')+ground(-3.17,-.63,-.63,30,'#768098');
+for(let i=0;i<15;i+=2){
+  if(i!==4) scene+=ground(i,-2.02,i+.95,-1.78,'#f6f1df');
+  scene+=ground(-2.02,i,-1.78,i+.95,'#f6f1df');
+}
+for(let i=0;i<5;i++){
+  const stripe=-3.06+i*.48;
+  scene+=ground(4.12,stripe,4.95,stripe+.23,'#efeee7');
+}
+scene+='<ellipse cx="384" cy="308" rx="354" ry="115" fill="#4caa41" opacity=".38"/>';
+for(const [x,y,size,tree] of [[42,405,65,1],[89,427,49,2],[737,405,65,3],[682,430,48,1],[143,453,40,3]]){
+  scene+='<ellipse cx="'+x+'" cy="'+y+'" rx="'+(size*.29)+'" ry="6" fill="#367d35" opacity=".32"/>';
+  scene+='<image href="assets/outdoor/AutumnTree0'+tree+'.png" x="'+(x-size/2)+'" y="'+(y-size)+'" width="'+size+'" height="'+size+'"/>';
+}
+for(const [x,y] of [[29,403],[106,361],[155,438],[211,427],[610,431],[711,411],[751,392]]){
+  scene+='<path d="M'+x+' '+y+' q-3 -7 -7 -9 q7 1 9 7 q1 -8 6 -11 l-2 12Z" fill="#479d40"/>';
+  scene+='<circle cx="'+(x+5)+'" cy="'+(y-8)+'" r="2.4" fill="#ffe16c"/>';
+}
+for(const [x,y] of [[63,421],[178,416],[651,436],[746,369]]){
+  scene+='<ellipse cx="'+x+'" cy="'+y+'" rx="8" ry="4" fill="#648767"/><ellipse cx="'+(x-2)+'" cy="'+(y-2)+'" rx="5" ry="3" fill="#9eac8c"/>';
+}
+scene+=block(0,0,columns,rows,10,['#e7e1cd','#b5b198','#9c9b85'],-10);
+for(let y=0;y<rows;y++) for(let x=0;x<columns;x++){
+  const corners=[point(x,y),point(x+1,y),point(x+1,y+1),point(x,y+1)];
+  const service=x>=8;
+  const border=x<=1||y<=1||y>=7;
+  const dark=(x>=4&&x<=5)||(y===4&&x>=3);
+  const shades=service?['#e9e7de','#f9f9ef']:border?['#cc4051','#e25360']:dark?['#565045','#655c4a']:['#f49c1b','#ffb639'];
+  scene+=polygon(corners,shades[(x+y)%2],service?'#c9c6b9':'#ffffff38');
+  const [left,top]=corners[0];
+  scene+='<path d="M'+left+' '+(top+2)+' l34 17 -34 17 -34 -17Z" fill="none" stroke="#ffffff18"/>';
+  tiles.push({x,y,corners});
+}
+function wallStripe(a,b,from,to,color){
+  return polygon([[a[0],a[1]-from],[b[0],b[1]-from],[b[0],b[1]-to],[a[0],a[1]-to]],color,'none');
+}
+function wall(a,b){
+  const bands=['#608746','#79a54f','#90b955','#648e46','#7eaa4d','#a2c668'];
+  return bands.map((color,i)=>wallStripe(a,b,i*9,(i+1)*9,color)).join('')+wallStripe(a,b,54,58,'#fffaf0');
+}
+scene+=wall(point(0,rows),point(0,0))+wall(point(0,0),point(columns,0));
+function wallWindow(x,y,mirror=false){
+  const image='<image href="assets/furniture/WindowInside11.png" x="'+(x-13)+'" y="'+(y-49)+'" width="26" height="38"/>';
+  return mirror?'<g transform="translate('+(2*x)+' 0) scale(-1 1)">'+image+'</g>':image;
+}
+for(const row of [1,3,5,7]) scene+=wallWindow(...point(0,row+.5));
+for(const column of [1,3,5,7,9]) scene+=wallWindow(...point(column+.5,0),true);
+function entrance(a,b){
+  return wallStripe(a,b,0,52,'#2a3534')+
+    wallStripe([a[0]+(b[0]-a[0])*.24,a[1]+(b[1]-a[1])*.24],[a[0]+(b[0]-a[0])*.76,a[1]+(b[1]-a[1])*.76],6,45,'#718f93');
+}
+scene+=entrance(point(0,4.85),point(0,4.1))+entrance(point(4.08,0),point(4.82,0));
+byId('scenery').innerHTML=scene;
+function dishArt(recipe,x,y){
+  return recipe.art
+    ? '<image href="assets/food/'+recipe.art+'.png" x="'+(x-17)+'" y="'+(y-20)+'" width="34" height="23" pointer-events="none"/>'
+    : label(x,y,recipe.icon,23);
+}
+const catalogByStyle=new Map(Object.values(originalCatalog).flat().map(entry=>[entry.style,entry]));
+const furnishings = {
+  stove:['Stove01',87,62], ruby:['Stove02',87,60],
+  table:['Table',69,55], chair:['Chair01TowardTable',29,42], backrest:['Chair01Backrest',29,42],
+  counter:['StainlessSteelKitchenCounter',72,57],
+  plant:['ClassyPlant',29,47], bamboo:['BambooPlant',29,70]
+};
+function furnishing(key,x,y){
+  const entry=catalogByStyle.get(key);
+  const [file,maxWidth,maxHeight]=furnishings[entry?.kind??key];
+  const image=entry?.image??'assets/furniture/'+file+'.png';
+  const w=entry?Math.min(maxWidth,maxHeight*entry.ratio):maxWidth;
+  const h=entry?w/entry.ratio:maxHeight;
+  return '<image href="'+image+'" x="'+(x-w/2)+'" y="'+(y-h)+'" width="'+w+'" height="'+h+'"/>';
+}
+function sprite(item,now){
+  const {x,y,kind}=item;
+  const [px,py]=point(x+.5,y+.5);
+  let art='', caption='', action='';
+  if(kind==='stove'){
+    art=furnishing(item.style??'stove',px+7,py+19);
+    if(item.dish!==undefined){
+      const recipe=recipes[item.dish];
+      art+=item.staffRecipe===undefined&&now>=item.spoils?label(px,py-32,'💨',23):dishArt(recipe,px,py-32);
+      caption=item.staffRecipe===undefined&&now>=item.spoils?'Limpar':now>=item.ready?'✓ Servir':Math.ceil((item.ready-now)/1000)+' s';
+    } else caption='Cozinhar';
+    action=item.dish===undefined?'Clique no fogão para preparar um prato':
+      recipes[item.dish].name+' · '+caption;
+    art='<title>'+action+'</title>'+art;
+  }
+  if(kind==='counter'){
+    art=furnishing('counter',px,py+16);
+    if(item.portions){art+=dishArt(recipes[item.dish],px,py-30);caption=item.portions+' porções';}
+  }
+  if(kind==='table'){
+    const diner=customers.find(guest=>guest.table===item&&isSeated(guest));
+    const [chairX,chairY]=point(item.x+.5+chairLayout.x,item.y+.5+chairLayout.y);
+    art=furnishing(item.style??'table',px-9,py+12)+furnishing('chair',chairX,chairY+9);
+    if(diner) art+=seatedPerson(diner,chairX,chairY);
+    if(diner){
+      art+=furnishing('backrest',chairX,chairY+9);
+      if(diner.phase==='eat') art+=dishArt(recipes[diner.dish],px-12,py-20);
+      if(diner.emoji) art+=guestBubble(chairX,chairY-50,diner.emoji);
+    }
+  }
+  if(kind==='plant') art=furnishing(item.style??'plant',px,py+8);
+  if(caption){
+    const width=Math.max(42,caption.length*7+10);
+    art+='<rect x="'+(px-width/2)+'" y="'+(py-66)+'" width="'+width+'" height="20" rx="8" fill="#fff8dc" stroke="#b37a4e"/>'+label(px,py-52,caption,12);
+  }
+  return {art,action};
+}
+const chairLayout={x:.42,y:.04,direction:'nw'};
+function seat(table){
+  return {x:table.x+chairLayout.x,y:table.y+chairLayout.y};
+}
+function isSeated(guest){
+  return guest.phase==='wait'||guest.phase==='eat';
+}
+function guestBubble(x,y,message){
+  return '<g transform="translate('+x+' '+y+')" pointer-events="none">'+
+    '<path d="M-4 -1 L0 5 L4 -1" fill="#fff8da" stroke="#805127"/>'+
+    '<ellipse cy="-7" rx="12" ry="9" fill="#fff8da" stroke="#805127"/>'+
+    label(0,-3,message,12,message==='♥'?'#be3d2d':'#5a3c21')+'</g>';
+}
+function seatedPerson(guest,x,y){
+  const sprite='assets/avatars/guest-'+guest.look+'-seated-'+chairLayout.direction+'.png';
+  return '<image href="'+sprite+'" x="'+(x-23)+'" y="'+(y-54)+'" width="40" height="54" pointer-events="none"/>';
+}
+function person(x,y,guest,now){
+  const [px,py]=point(x+.5,y+.5);
+  const [fromX,fromY]=point(guest.from.x,guest.from.y);
+  const [toX,toY]=point(guest.to.x,guest.to.y);
+  const direction=toY>=fromY?'front':'back';
+  const mirror=direction==='front'?toX<fromX:toX>fromX;
+  const facing=mirror?' transform="translate('+(2*px)+' 0) scale(-1 1)"':'';
+  const step=Math.sin((now-guest.started)/75)*1.5;
+  const sprite='assets/avatars/guest-'+guest.look+'-'+direction+'.png';
+  return '<image href="'+sprite+'" x="'+(px-20)+'" y="'+(py-52+step)+'" width="40" height="54" pointer-events="none"'+facing+'/>'+
+    (guest.emoji?guestBubble(px,py-50,guest.emoji):'')+
+    (guest.phase==='leave'&&guest.emoji==='♥'
+      ? label(px,py-67-Math.min(14,(now-guest.started)/70),'+'+guest.sale+' ouro',12,'#815305')
+      : '');
+}
+function render(now){
+  const stats={'cafe-name':state.cafeName??'Meu Café',coins:state.coins,level:level(),popularity:'☺ '+state.popularity+'%', 'xp-text':state.xp+' XP'};
+  for(const [id,value] of Object.entries(stats)){
+    if(byId(id).textContent!==String(value)) byId(id).textContent=value;
+  }
+  byId('xp-fill').style.width=(state.xp%35/35*100)+'%';
+  const elements=state.furniture.map((item,index)=>{
+    const {art,action}=sprite(item,now);
+    const attrs=(action||moving)?' role="button" tabindex="0" aria-label="'+(action||'Mover móvel')+'"':'';
+    return {depth:item.x+item.y,art:'<g data-item="'+index+'"'+attrs+'>'+art+'</g>'};
+  });
+  for(const guest of customers){
+    if(isSeated(guest)) continue;
+    const progress=Math.max(0,Math.min(1,(now-guest.started)/1300));
+    const x=guest.from.x+(guest.to.x-guest.from.x)*progress;
+    const y=guest.from.y+(guest.to.y-guest.from.y)*progress;
+    elements.push({depth:x+y+.3,art:person(x,y,guest,now)});
+  }
+  const active=document.activeElement?.dataset.item;
+  const floor=tiles.map(({x,y,corners})=>'<g data-tile="'+x+','+y+'">'+polygon(corners,'transparent','transparent')+'</g>').join('');
+  byId('objects').innerHTML=floor+elements.sort((a,b)=>a.depth-b.depth).map(element=>element.art).join('');
+  if(active!==undefined) byId('objects').querySelector('[data-item="'+active+'"]')?.focus({preventScroll:true});
+}
+let zoom=1;
+function setZoom(value){
+  zoom=Math.min(1.45,Math.max(1,value));
+  const w=780/zoom,h=485/zoom;
+  byId('room').setAttribute('viewBox',[(780-w)/2,(485-h)/2,w,h].join(' '));
+  byId('zoom-in').disabled=zoom>=1.45;
+  byId('zoom-out').disabled=zoom<=1;
+}
+byId('zoom-in').onclick=()=>setZoom(zoom+.15);
+byId('zoom-out').onclick=()=>setZoom(zoom-.15);
+byId('zoom-reset').onclick=()=>setZoom(1);
+setZoom(1);
+function show(title,choices,recipeGrid=false){
+  byId('items').classList.toggle('recipe-grid',recipeGrid);
+  byId('recipe-pages').hidden=!recipeGrid;
+  byId('book-switch').hidden=!recipeGrid;
+  byId('panel').classList.remove('deluxe');
+  byId('title').textContent=title;
+  byId('items').replaceChildren();
+  for(const choice of choices){
+    const row=document.createElement('div');
+    row.className='item';
+    const description=document.createElement('div');
+    const name=document.createElement('strong');
+    name.textContent=choice.name;
+    const detail=document.createElement('small');
+    detail.textContent=choice.detail;
+    description.append(name,detail);
+    const button=document.createElement('button');
+    button.textContent=choice.button;
+    button.disabled=choice.disabled??false;
+    button.onclick=choice.run;
+    if(choice.image){
+      const preview=document.createElement('img');
+      preview.src=choice.image;
+      preview.alt='';
+      preview.loading='lazy';
+      preview.width=52;
+      row.append(preview);
+    }
+    if(choice.icon){
+      const icon=document.createElement('span');
+      icon.className='dish-icon';
+      icon.textContent=choice.icon;
+      icon.setAttribute('aria-hidden','true');
+      row.append(icon);
+    }
+    row.append(description,button);
+    byId('items').append(row);
+  }
+  if(!byId('panel').open) byId('panel').showModal();
+}
+function startRecipe(stove,index,now){
+  const recipe=recipes[index];
+  if(state.coins<recipe.cost||level()<recipe.level||stove.dish!==undefined) return false;
+  const ready=now+recipe.time*1000;
+  Object.assign(stove,{dish:index,ready,spoils:ready+Math.max(30000,recipe.time*1000)});
+  state.coins-=recipe.cost;
+  playEffect('SfxCooking');
+  save();
+  return true;
+}
+function availableCounter(index){
+  const counters=state.furniture.filter(item=>item.kind==='counter');
+  return counters.find(item=>item.portions&&item.dish===index)??counters.find(item=>!item.portions);
+}
+function runKitchen(now){
+  for(const stove of state.furniture){
+    if(stove.kind!=='stove'||stove.staffRecipe===undefined) continue;
+    if(stove.dish!==undefined){
+      if(now<stove.ready) continue;
+      stoveClick(stove,true,now);
+      if(stove.dish!==undefined) continue;
+    }
+    const counter=availableCounter(stove.staffRecipe);
+    const recipe=recipes[stove.staffRecipe];
+    if(counter&&(counter.portions??0)<recipe.portions) startRecipe(stove,stove.staffRecipe,now);
+  }
+}
+byId('rename').onclick=()=>{
+  byId('cafe-name-input').value=state.cafeName??'Meu Café';
+  byId('rename-panel').showModal();
+  byId('cafe-name-input').select();
+};
+byId('cancel-rename').onclick=()=>byId('rename-panel').close();
+byId('rename-form').onsubmit=event=>{
+  event.preventDefault();
+  const name=byId('cafe-name-input').value.trim();
+  if(!name) return;
+  state.cafeName=name;
+  save();
+  byId('rename-panel').close();
+};
+byId('staff').onclick=()=>{
+  const stoves=state.furniture.filter(item=>item.kind==='stove');
+  show('Funcionários',stoves.map((stove,index)=>({
+    name:'Fogão '+(index+1),
+    detail:stove.staffRecipe===undefined?'Sem funcionário':recipes[stove.staffRecipe].name,
+    button:stove.staffRecipe===undefined?'Contratar':'Configurar',
+    run(){
+      show('Cozinheiro do fogão '+(index+1),[
+        ...recipes.map((recipe,id)=>({
+          name:recipe.name,detail:recipe.cost+' ouro por preparo',button:'Designar',
+          disabled:level()<recipe.level,
+          run(){stove.staffRecipe=id;save();byId('panel').close();tell('Cozinheiro designado para '+recipe.name+'.');}
+        })),
+        ...(stove.staffRecipe===undefined?[]:[{
+          name:'Parar cozinha automática',detail:'O preparo atual pode ser servido manualmente.',button:'Dispensar',
+          run(){delete stove.staffRecipe;save();byId('panel').close();}
+        }])
+      ]);
+    }
+  })));
+};
+function showRecipePage(stove,page=0,deluxe=false){
+  const pageSize=4;
+  const entries=recipes.map((recipe,index)=>({recipe,index}))
+    .filter(({recipe})=>Boolean(recipe.deluxe)===deluxe);
+  const pageCount=Math.ceil(entries.length/pageSize);
+  const start=page*pageSize;
+  show(deluxe?'Livro de Luxo':'Livro de Receitas',entries.slice(start,start+pageSize).map(({recipe,index})=>({
+      name:recipe.name,
+      icon:recipe.art?null:recipe.icon,
+      image:recipe.art?'assets/food/'+recipe.art+'.png':null,
+      detail:recipe.portions+' porções · '+recipe.time+' s\nCusto: '+recipe.cost+' ouro · Venda: '+(recipe.portions*recipe.sale)+' ouro\n'+recipe.xp+' XP · Nível '+recipe.level,
+      button:'Cozinhar',
+      disabled:state.coins<recipe.cost||level()<recipe.level,
+      run(){
+        if(!startRecipe(stove,index,Date.now())) return;
+        byId('panel').close();
+        tell(recipe.name+' está no fogão.');
+      }
+    })),true);
+  byId('panel').classList.toggle('deluxe',deluxe);
+  byId('book-switch').textContent=deluxe?'Livro de Receitas':'Livro de Luxo';
+  byId('book-switch').onclick=()=>showRecipePage(stove,0,!deluxe);
+  byId('page-number').textContent='Página '+(page+1)+' de '+pageCount;
+  byId('previous-page').disabled=page===0;
+  byId('next-page').disabled=page===pageCount-1;
+  byId('previous-page').onclick=()=>showRecipePage(stove,page-1,deluxe);
+  byId('next-page').onclick=()=>showRecipePage(stove,page+1,deluxe);
+}
+function stoveClick(stove,automatic=false,now=Date.now()){
+  if(stove.dish===undefined){
+    showRecipePage(stove);
+    return;
+  }
+  const recipe=recipes[stove.dish];
+  if(now<stove.ready){tell(recipe.name+' fica pronto em '+Math.ceil((stove.ready-now)/1000)+' s.');return;}
+  if(!automatic&&stove.staffRecipe===undefined&&now>=stove.spoils) tell('O prato estragou. Fogão limpo e pronto para cozinhar.');
+  else {
+    const counter=availableCounter(stove.dish);
+    if(!counter){if(!automatic) tell('Os balcões estão cheios. Espere os clientes consumirem as porções.');return;}
+    counter.dish=stove.dish;
+    counter.portions=(counter.portions??0)+recipe.portions;
+    const previousLevel=level();
+    state.xp+=recipe.xp;
+    if(level()>previousLevel) playEffect('SfxLevelUp');
+    if(!automatic) tell(recipe.name+' no balcão! Os clientes já podem pedir.');
+  }
+  delete stove.dish;
+  delete stove.ready;
+  delete stove.spoils;
+  save();
+}
+byId('menu').onclick=()=>{
+  const stove=state.furniture.find(item=>item.kind==='stove'&&item.dish===undefined);
+  if(stove) stoveClick(stove);
+  else tell('Todos os fogões estão ocupados. Clique em um deles para conferir o preparo.');
+};
+byId('progress').onclick=()=>show('Progresso do café',[
+  {name:'Nível '+level(),detail:state.xp+' XP acumulados',button:'⭐',disabled:true},
+  {name:'Clientes atendidos',detail:state.served+' porções vendidas',button:'☺',disabled:true},
+]);
+function shopChoice(entry){
+  return {
+    name:entry.name,image:entry.image??'assets/furniture/'+furnishings[entry.style??entry.kind][0]+'.png',
+    detail:'Escolha um quadrado livre no salão.',button:'🪙 '+entry.cost,
+    disabled:state.coins<entry.cost,
+    run(){placement=entry;byId('panel').close();tell('Clique em um piso livre para colocar '+entry.name.toLowerCase()+'.');}
+  };
+}
+byId('shop').onclick=()=>{
+  placement=null;
+  moving=null;
+  show('Loja de decoração',[
+    ...furniture.map(shopChoice),
+    ...[['table','Mesas'],['stove','Fogões'],['plant','Decoração']].map(([kind,name])=>({
+      name:name+' do Restaurant City',detail:originalCatalog[kind].length+' opções',button:'Ver catálogo',
+      run(){show(name,originalCatalog[kind].map(shopChoice));}
+    })),
+    {name:'Reorganizar salão',detail:'Selecione um móvel e depois um piso livre.',button:'Mover',run(){
+      moving={};byId('panel').close();tell('Clique no móvel que você quer mover.');
+    }}
+  ]);
+};
+function interact(target){
+  const clicked=target.closest('[data-item]');
+  const tile=target.closest('[data-tile]');
+  if(clicked){
+    const item=state.furniture[Number(clicked.dataset.item)];
+    if(moving){moving.item=item;tell('Agora clique em um piso livre.');}
+    else if(!placement&&item.kind==='stove') stoveClick(item);
+    else if(item.kind==='counter') tell(item.portions?item.portions+' porções de '+recipes[item.dish].name+'.':'Balcão vazio. Sirva um prato pronto.');
+    return;
+  }
+  if(!tile||(!placement&&!moving?.item)) return;
+  const [x,y]=tile.dataset.tile.split(',').map(Number);
+  if(state.furniture.some(item=>item.x===x&&item.y===y)||(x===door.x&&y===door.y)){tell('Escolha um piso livre e deixe a entrada aberta.');return;}
+  if(placement){
+    if(state.coins<placement.cost) return;
+    state.coins-=placement.cost;
+    state.furniture.push({kind:placement.kind,style:placement.style,x,y});
+  } else Object.assign(moving.item,{x,y});
+  placement=null; moving=null;
+  tell('Salão atualizado.');
+  playEffect('SfxPlaceItem');
+  save();
+}
+byId('room').onclick=event=>interact(event.target);
+byId('room').onkeydown=event=>{
+  if(event.key==='Enter'||event.key===' '){event.preventDefault();interact(event.target);}
+};
+const door={x:0,y:4};
+function simulate(now){
+  for(const guest of customers){
+    if(guest.phase==='enter'&&now>=guest.until){
+      guest.phase='wait';
+      guest.until=now+18000;
+      guest.emoji='…';
+    }
+    if(guest.phase==='wait'){
+      if(now>=guest.until){
+        leave(guest,now,false);
+        continue;
+      }
+      const counter=state.furniture.find(item=>item.kind==='counter'&&item.portions>0);
+      if(!counter) continue;
+      counter.portions--;
+      guest.dish=counter.dish;
+      guest.sale=recipes[counter.dish].sale;
+      guest.emoji='';
+      guest.phase='eat';
+      guest.until=now+10000;
+      playEffect('SfxEating');
+    } else if(guest.phase==='eat'&&now>=guest.until) leave(guest,now,true);
+  }
+  customers=customers.filter(guest=>guest.phase!=='leave'||now<guest.until);
+  if(now<nextGuest) return;
+  nextGuest=now+Math.max(1300,3100-state.popularity*19);
+  const freeTables=state.furniture.filter(item=>item.kind==='table'&&!customers.some(guest=>guest.table===item&&guest.phase!=='leave'));
+  if(!freeTables.length){
+    state.popularity=Math.max(0,state.popularity-1);
+    save();
+    return;
+  }
+  const table=freeTables[tableCursor % freeTables.length];
+  tableCursor++;
+  customers.push({
+    table, from:door,to:seat(table), phase:'enter',
+    started:now,until:now+1350,look:1+Math.floor(Math.random()*3)
+  });
+}
+function leave(guest,now,happy){
+  if(happy){
+    state.coins+=guest.sale;
+    state.served++;
+    playEffect('SfxCash');
+  }
+  state.popularity=Math.min(100,Math.max(0,state.popularity+(happy?2:-1)));
+  Object.assign(guest,{phase:'leave',from:seat(guest.table),to:door,started:now,until:now+1400,emoji:happy?'♥':'…'});
+  save();
+}
+function tick(){
+  const now=Date.now();
+  runKitchen(now);
+  simulate(now);
+  render(now);
+}
+tick();
+setInterval(tick,120);
+</script>
+</html>
+
+
